@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang = "en">
+  <head>
+    <title>ChaTinder</title>
+  </head>
+  <body>
+    <script type="application/javascript">
+      const account = 'oni-chan'
+      const time = new Date()
+      let numberMessages = 0
+
+      function chatRefresh() {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve('Refreshed')
+          }, 10000)
+        })
+      }
+
+      document.getElementsByTagName("body")[0].style.backgroundColor = "#40444b";
+
+      // CREANDO LA INFORMACION DEL CONTACTO
+      const tinderHeader = document.createElement('div')
+      tinderHeader.style.backgroundColor = "#36393f"
+      tinderHeader.style.position = "fixed"
+      tinderHeader.style.top = "0"
+      tinderHeader.style.left = "0"
+      tinderHeader.style.right = "0"
+      tinderHeader.style.display = "flex"
+      tinderHeader.style.alignItems = "center"
+      tinderHeader.style.flexDirection = "column"
+      
+        // Creando la imagen del match
+        const matchContainer = document.createElement('figure')
+        const matchImage = document.createElement('img')
+        matchImage.src = 'Elaina.png'
+        matchImage.style.borderRadius = "50%"
+        matchImage.style.height = "75px"
+        matchImage.style.width = "75px"
+
+        matchContainer.append(matchImage)
+        tinderHeader.append(matchContainer)
+
+        // Creando el nombre del match
+        const matchText = document.createElement('h5')
+        matchText.append('You matched with Elaina')
+        matchText.style.color = "white"
+
+        tinderHeader.append(matchText)
+
+      document.body.append(tinderHeader)
+
+      // CREANDO EL CHAT
+      const tinderChat = document.createElement('div')
+      tinderChat.style.marginTop = "180px"
+      tinderChat.style.marginBottom = "90px"
+      tinderChat.style.display = "flex"
+      tinderChat.style.flexDirection = "column"
+      document.body.append(tinderChat)
+
+        // Creando los mensajes e ingresandolos al chat
+        const addMessage = (jsonMessage) => {
+          const messageContainer = document.createElement('div')
+          messageContainer.style.borderRadius = "10px"
+          messageContainer.style.margin = "10px"
+          messageContainer.style.padding = "5px"
+          
+          // Verificar si es un mensaje enviado desde host o alguien mas
+          if (account === jsonMessage.sender){
+            messageContainer.style.border = "3px solid #10c2ff"
+            messageContainer.style.backgroundColor = "#10c2ff"
+          } else {
+            messageContainer.style.border = "3px solid #f9485a"
+            messageContainer.style.backgroundColor = "#f9485a"
+          }
+          tinderChat.append(messageContainer)
+
+          // Creando quien lo mando
+          const sender = document.createElement('h2')
+          sender.append('From: ', jsonMessage.sender)
+          messageContainer.append(sender)
+
+          // Mostrando el mensaje dependiendo de lo que sea
+          const temp = jsonMessage.message
+          const message = document.createElement('p')
+            message.append('Message: ', temp)
+            messageContainer.append(message)
+          if ((temp.indexOf('data:image') !== -1) 
+              || (temp.indexOf('jpg') !== -1)
+              || (temp.indexOf('gif') !== -1)
+              || (temp.indexOf('png') !== -1)){
+            const image = document.createElement('img')
+            image.src = temp
+            messageContainer.append(image)
+          }
+          
+        }
+
+        // Guardando el contenido en el chat de tinder
+        const createMessages = () => {
+          fetch('http://ubeje.xyz:3000/messages').then((r) => {
+            return r.json()
+          }).then((j) => {
+            numberMessages = j.length // Se consigue la cantidad de mensajes
+            j.forEach((jsonMessage) => {
+              addMessage(jsonMessage)  // Creando todos los mensajes
+            })
+          })
+        }
+
+        // Se verifica que siempre 
+        const refreshMessages = async () => {
+          createMessages()
+          while (true){
+            const timer = await chatRefresh() // Esperando a qu epasen 10 segundos
+            
+            // Se consiguen todos los mensajes
+            fetch('http://ubeje.xyz:3000/messages').then((r) => {
+              return r.json()
+            }).then((response) => {
+              const responseLength = response.length
+              if (numberMessages < responseLength){
+                
+                // Se agregan todos los mensajes nuevos
+                for (var i = numberMessages; i < responseLength; i++){
+                  addMessage(response[i])
+                  numberMessages = responseLength
+                }
+              }
+            })
+          }
+        }
+
+      refreshMessages() // CREANDO EL CHAT
+
+      // CREANDO LA PARTE EN DONDE SE VAN A MANDAR LOS MENSAJES
+      const tinderFooter = document.createElement('div')
+      tinderFooter.style.padding = "5px"
+      tinderFooter.style.border = "3px solid black"
+      tinderFooter.style.backgroundColor = "#36393f"
+      tinderFooter.style.position = "fixed"
+      tinderFooter.style.bottom = "0"
+      tinderFooter.style.right = "0"
+      tinderFooter.style.left = "0"
+      tinderFooter.style.display = "flex"
+      tinderFooter.style.flexDirection = "row"
+      document.body.append(tinderFooter)
+
+        // Creando el boton del gift
+        const gifButton = document.createElement('button')
+        gifButton.append('GIF')
+        gifButton.style.backgroundColor = "#f9485a"
+        gifButton.style.border = "0px solid transparent"
+        gifButton.style.borderRadius = "50%"
+        gifButton.style.height = "30px"
+        gifButton.style.width = "30px"
+        gifButton.style.margin = "8px"
+        gifButton.style.outline = "none"
+        gifButton.style.color = "white"
+        gifButton.style.display = "flex"
+        gifButton.style.alignItems = "center"
+        gifButton.style.justifyContent = "center"
+        tinderFooter.append(gifButton)
+
+        // Parte del chat con su boton
+        const inputContainer = document.createElement('div')
+        inputContainer.style.backgroundColor = "#40444b"
+        inputContainer.style.border = "3px solid black"
+        inputContainer.style.borderRadius = "10px"
+        inputContainer.style.width = "100%"
+        inputContainer.style.marginLeft = "10px"
+        inputContainer.style.display = "flex"
+        inputContainer.style.flexDirection = "row"
+        inputContainer.style.justifyContent = "space-between"
+        tinderFooter.append(inputContainer) 
+
+          const input = document.createElement('input')
+          input.style.backgroundColor = "transparent"
+          input.style.border = "0px solid transparent"
+          input.style.outline = "none"
+          input.style.width = "100%"
+          input.style.margin = "5px"
+          input.style.color = "white"
+          input.placeholder = "Type a message"
+          input.maxLength = "140"
+          inputContainer.append(input)
+
+          const sendButton = document.createElement('button')
+          sendButton.append('Send')
+          sendButton.style.backgroundColor = "transparent"
+          sendButton.style.border = "0px solid transparent"
+          sendButton.style.marginRight = "10px"
+          sendButton.style.outline = "none"
+          sendButton.style.color = "white"
+          inputContainer.append(sendButton)      
+      
+      // METODO PARA MANDAR LOS MENSAJES
+      const sendMessage = () => {
+        fetch('http://ubeje.xyz:3000/messages', { 
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sender: account,
+            message: input.value,
+            date: time.toLocaleDateString(),
+          })
+        }).then(
+          input.value = ''
+        )
+      }
+
+        // Agregandole funcionalidad al input
+        input.addEventListener('keypress', (event) => {
+          if (event.key === 'Enter'){
+            sendMessage()
+          } 
+        })
+
+        // Agregandole funcionalidad a 
+        sendButton.addEventListener('click', () => {
+          sendMessage()
+        }) 
+
+      gifButton.addEventListener('click', () => {
+        alert('No GIFs implemented :c')
+      })
+    </script>
+    
+  </body>
+</html>
